@@ -3,37 +3,37 @@ class Input {
         this._keyMap = {};
         this.events = [];
 
-        this.AddKeyDownListner(this._onKeyDown);
-        this.AddKeyUpListner(this._onKeyUp);
+        this.AddKeyDownListener(this._onKeyDown);
+        this.AddKeyUpListener(this._onKeyUp);
     }
 
-    _addEventListner(element, type, callback) {
+    _addEventListener(element, type, callback) {
         element.addEventListener(type, callback);
         this.events.push({ element, type, callback });
     }
 
-    AddKeyDownListner(callback) {
-        this._addEventListner(document, 'keydown', callback);
+    AddKeyDownListener(callback) {
+        this._addEventListener(document, 'keydown', callback);
     }
 
-    AddKeyUpListner(callback) {
-        this._addEventListner(document, 'keyup', callback);
+    AddKeyUpListener(callback) {
+        this._addEventListener(document, 'keyup', callback);
     }
 
-    AddMouseMoveListner(callback) {
-        this._addEventListner(document, 'mousemove', callback);
+    AddMouseMoveListener(callback) {
+        this._addEventListener(document, 'mousemove', callback);
     }
 
-    AddClickListner(callback) {
-        this._addEventListner(document.body, 'click', callback);
+    AddClickListener(callback) {
+        this._addEventListener(document.body, 'click', callback);
     }
 
-    AddMouseDownListner(callback) {
-        this._addEventListner(document.body, 'mousedown', callback);
+    AddMouseDownListener(callback) {
+        this._addEventListener(document.body, 'mousedown', callback);
     }
 
-    AddMouseUpListner(callback) {
-        this._addEventListner(document.body, 'mouseup', callback);
+    AddMouseUpListener(callback) {
+        this._addEventListener(document.body, 'mouseup', callback);
     }
 
     _onKeyDown = (event) => {
@@ -54,8 +54,8 @@ class Input {
         });
 
         this.events = [];
-        this.AddKeyDownListner(this._onKeyDown);
-        this.AddKeyUpListner(this._onKeyUp);
+        this.AddKeyDownListener(this._onKeyDown);
+        this.AddKeyUpListener(this._onKeyUp);
     }
 }
 

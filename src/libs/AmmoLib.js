@@ -1,3 +1,9 @@
+/**
+ *
+ * @see: https://github.com/kripken/ammo.js
+ * @see: https://pybullet.org/wordpress/
+ */
+
 import * as _Ammo from 'ammo.js';
 import * as THREE from 'three';
 

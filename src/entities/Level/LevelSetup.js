@@ -29,8 +29,8 @@ export default class LevelSetup extends Component {
                 shadow.mapSize.height = 1024 * 3;
                 shadow.bias = -0.00007;
 
-                const dH = 35,
-                    dV = 35;
+                const dH = 35;
+                const dV = 35;
                 lightCam.left = -dH;
                 lightCam.right = dH;
                 lightCam.top = dV;

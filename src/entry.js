@@ -24,14 +24,19 @@ import Input from './Input';
 // * Entity
 import Sky from './entities/Sky/Sky';
 import LevelSetup from './entities/Level/LevelSetup';
+import PlayerPhysics from './entities/Player/PlayerPhysics';
+import PlayerControls from './entities/Player/PlayerControls';
 
 // * Assets
 import skyTex from './assets/sky.jpg';
 import level from './assets/level.glb';
 import navmesh from './assets/navmesh.obj';
+import ak47 from './assets/guns/ak47/ak47.glb';
+import muzzleFlash from './assets/muzzle_flash.glb';
 
 import UIManager from './ui/UIManager';
 import { Ammo, AmmoHelper } from './libs/AmmoLib';
+import PlayerHealth from './entities/Player/PlayerHealth';
 
 class FPSGameApp {
     constructor() {
@@ -116,9 +121,22 @@ class FPSGameApp {
         levelEntity.AddComponent(
             new LevelSetup(this.assets['level'], this.scene, this.physicsWorld)
         );
-
         this.entityManager.Add(levelEntity);
 
+        // Player entity
+        const playerEntity = new Entity();
+        playerEntity.SetName('Player');
+        playerEntity.AddComponent(new PlayerPhysics(this.physicsWorld, Ammo));
+        playerEntity.AddComponent(new PlayerControls(this.camera, this.scene));
+        playerEntity.AddComponent(new PlayerHealth());
+        playerEntity.SetPosition(new THREE.Vector3(2.14, 1.48, -1.36));
+        playerEntity.SetRotation(
+            new THREE.Quaternion().setFromAxisAngle(
+                new THREE.Vector3(0, 1, 0),
+                -Math.PI * 0.5
+            )
+        );
+        this.entityManager.Add(playerEntity);
         // display amount bullet, blood of player
         const uiManagerEntity = new Entity();
         uiManagerEntity.SetName('UIManager');
