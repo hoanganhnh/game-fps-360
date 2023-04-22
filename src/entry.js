@@ -12,6 +12,7 @@ import * as THREE from 'three';
 // * Three utilities
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader';
 
 // * Entity utilities
 import EntityManager from './EntityManager';
@@ -22,11 +23,15 @@ import Input from './Input';
 
 // * Entity
 import Sky from './entities/Sky/Sky';
+import LevelSetup from './entities/Level/LevelSetup';
 
 // * Assets
 import skyTex from './assets/sky.jpg';
+import level from './assets/level.glb';
+import navmesh from './assets/navmesh.obj';
 
 import UIManager from './ui/UIManager';
+import { Ammo, AmmoHelper } from './libs/AmmoLib';
 
 class FPSGameApp {
     constructor() {
@@ -34,7 +39,9 @@ class FPSGameApp {
         this.assets = {};
         this.animFrameId = 0;
 
-        this.Init();
+        AmmoHelper.Init(() => {
+            this.Init();
+        });
     }
 
     Init() {
@@ -75,13 +82,20 @@ class FPSGameApp {
 
     async LoadAssets() {
         const textureLoader = new THREE.TextureLoader();
+        const gltfLoader = new GLTFLoader();
+        const objLoader = new OBJLoader();
 
         const promises = [];
 
         // Sky
         promises.push(this.AddAsset(skyTex, textureLoader, 'skyTex'));
+        // Level container environment
+        promises.push(this.AddAsset(level, gltfLoader, 'level'));
+        promises.push(this.AddAsset(navmesh, objLoader, 'navmesh'));
 
         await this.PromiseProgress(promises, this.OnProgress);
+
+        this.assets['level'] = this.assets['level'].scene;
 
         this.HideProgress();
         this.ShowMenu();
@@ -90,10 +104,20 @@ class FPSGameApp {
     EntitySetup() {
         this.entityManager = new EntityManager();
 
+        // Sky entity
         const skyEntity = new Entity();
         skyEntity.SetName('Sky');
         skyEntity.AddComponent(new Sky(this.scene, this.assets['skyTex']));
         this.entityManager.Add(skyEntity);
+
+        // Level entity
+        const levelEntity = new Entity();
+        levelEntity.SetName('Level');
+        levelEntity.AddComponent(
+            new LevelSetup(this.assets['level'], this.scene, this.physicsWorld)
+        );
+
+        this.entityManager.Add(levelEntity);
 
         // display amount bullet, blood of player
         const uiManagerEntity = new Entity();
@@ -109,6 +133,38 @@ class FPSGameApp {
             this.OnAnimationFrameHandler
         );
     }
+
+    SetupPhysics() {
+        // Physics configuration
+        const collisionConfiguration =
+            new Ammo.btDefaultCollisionConfiguration();
+        const dispatcher = new Ammo.btCollisionDispatcher(
+            collisionConfiguration
+        );
+        const broadphase = new Ammo.btDbvtBroadphase();
+        const solver = new Ammo.btSequentialImpulseConstraintSolver();
+        this.physicsWorld = new Ammo.btDiscreteDynamicsWorld(
+            dispatcher,
+            broadphase,
+            solver,
+            collisionConfiguration
+        );
+        this.physicsWorld.setGravity(new Ammo.btVector3(0.0, -9.81, 0.0));
+        const fp = Ammo.addFunction(this.PhysicsUpdate);
+        this.physicsWorld.setInternalTickCallback(fp);
+        this.physicsWorld
+            .getBroadphase()
+            .getOverlappingPairCache()
+            .setInternalGhostPairCallback(new Ammo.btGhostPairCallback());
+
+        //Physics debug drawer
+        //this.debugDrawer = new DebugDrawer(this.scene, this.physicsWorld);
+        //this.debugDrawer.enable();
+    }
+
+    PhysicsUpdate = (world, timeStep) => {
+        this.entityManager.PhysicsUpdate(world, timeStep);
+    };
 
     AddAsset(asset, loader, name) {
         return loader.loadAsync(asset).then((result) => {
@@ -155,6 +211,7 @@ class FPSGameApp {
 
         // Create entities and physics
         this.scene.clear();
+        this.SetupPhysics();
         this.EntitySetup();
         this.ShowMenu(false);
     };
@@ -184,6 +241,7 @@ class FPSGameApp {
     };
 
     Step(elapsedTime) {
+        this.physicsWorld.stepSimulation(elapsedTime, 10);
         this.entityManager.Update(elapsedTime);
 
         this.renderer.render(this.scene, this.camera);
