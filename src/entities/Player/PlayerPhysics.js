@@ -16,14 +16,18 @@ export default class PlayerPhysics extends Component {
     }
 
     Initialize() {
-        const height = 1.3,
-            radius = 0.3,
-            mass = 5;
+        const height = 1.3;
+        const radius = 0.3;
+        const mass = 5;
 
         const transform = new Ammo.btTransform();
         transform.setIdentity();
-        const pos = this.parent.Position;
-        transform.setOrigin(new Ammo.btVector3(pos.x, pos.y, pos.z));
+
+        const position = this.parent.Position;
+        transform.setOrigin(
+            new Ammo.btVector3(position.x, position.y, position.z)
+        );
+
         const motionState = new Ammo.btDefaultMotionState(transform);
 
         const shape = new Ammo.btCapsuleShape(radius, height);
@@ -37,7 +41,6 @@ export default class PlayerPhysics extends Component {
         this.body = new Ammo.btRigidBody(bodyInfo);
         this.body.setFriction(0);
 
-        //this.body.setCollisionFlags(this.body.getCollisionFlags() | CF_KINEMATIC_OBJECT);
         this.body.setActivationState(DISABLE_DEACTIVATION);
 
         this.world.addRigidBody(this.body);

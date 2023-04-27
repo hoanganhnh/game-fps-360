@@ -14,7 +14,7 @@ export default class PlayerControls extends Component {
         this.maxSpeed = 7.0;
         this.speed = new THREE.Vector3();
         this.acceleration = this.maxSpeed / this.timeZeroToMax;
-        this.decceleration = -7.0;
+        this.deceleration = -7.0;
 
         this.mouseSpeed = 0.002;
         this.physicsComponent = null;
@@ -93,7 +93,7 @@ export default class PlayerControls extends Component {
         this.camera.quaternion.copy(this.parent.Rotation);
     }
 
-    Accelarate = (direction, t) => {
+    Accelerate = (direction, t) => {
         const accel = this.tempVec
             .copy(direction)
             .multiplyScalar(this.acceleration * t);
@@ -101,11 +101,11 @@ export default class PlayerControls extends Component {
         this.speed.clampLength(0.0, this.maxSpeed);
     };
 
-    Deccelerate = (t) => {
-        const frameDeccel = this.tempVec
+    Decelerate = (t) => {
+        const frameDecelerate = this.tempVec
             .copy(this.speed)
-            .multiplyScalar(this.decceleration * t);
-        this.speed.add(frameDeccel);
+            .multiplyScalar(this.deceleration * t);
+        this.speed.add(frameDecelerate);
     };
 
     Update(t) {
@@ -123,8 +123,8 @@ export default class PlayerControls extends Component {
             this.physicsComponent.canJump = false;
         }
 
-        this.Deccelerate(t);
-        this.Accelarate(direction, t);
+        this.Decelerate(t);
+        this.Accelerate(direction, t);
 
         const moveVector = this.tempVec.copy(this.speed);
         moveVector.applyQuaternion(this.yaw);

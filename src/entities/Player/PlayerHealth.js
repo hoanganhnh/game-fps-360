@@ -4,6 +4,7 @@ export default class PlayerHealth extends Component {
     constructor() {
         super();
         this.health = 100;
+        this.name = 'PlayerHealth';
     }
 
     TakeHit = (e) => {

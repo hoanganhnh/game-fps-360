@@ -126,8 +126,8 @@ class FPSGameApp {
         // Player entity
         const playerEntity = new Entity();
         playerEntity.SetName('Player');
-        playerEntity.AddComponent(new PlayerPhysics(this.physicsWorld, Ammo));
-        playerEntity.AddComponent(new PlayerControls(this.camera, this.scene));
+        playerEntity.AddComponent(new PlayerPhysics(this.physicsWorld));
+        playerEntity.AddComponent(new PlayerControls(this.camera));
         playerEntity.AddComponent(new PlayerHealth());
         playerEntity.SetPosition(new THREE.Vector3(2.14, 1.48, -1.36));
         playerEntity.SetRotation(
@@ -137,6 +137,7 @@ class FPSGameApp {
             )
         );
         this.entityManager.Add(playerEntity);
+
         // display amount bullet, blood of player
         const uiManagerEntity = new Entity();
         uiManagerEntity.SetName('UIManager');
@@ -159,11 +160,11 @@ class FPSGameApp {
         const dispatcher = new Ammo.btCollisionDispatcher(
             collisionConfiguration
         );
-        const broadphase = new Ammo.btDbvtBroadphase();
+        const broadPhase = new Ammo.btDbvtBroadphase();
         const solver = new Ammo.btSequentialImpulseConstraintSolver();
         this.physicsWorld = new Ammo.btDiscreteDynamicsWorld(
             dispatcher,
-            broadphase,
+            broadPhase,
             solver,
             collisionConfiguration
         );
@@ -174,10 +175,6 @@ class FPSGameApp {
             .getBroadphase()
             .getOverlappingPairCache()
             .setInternalGhostPairCallback(new Ammo.btGhostPairCallback());
-
-        //Physics debug drawer
-        //this.debugDrawer = new DebugDrawer(this.scene, this.physicsWorld);
-        //this.debugDrawer.enable();
     }
 
     PhysicsUpdate = (world, timeStep) => {

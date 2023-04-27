@@ -19,6 +19,7 @@ export default class EntityManager {
     }
 
     EndSetup() {
+        console.log(this.entities);
         for (const ent of this.entities) {
             for (const key in ent.components) {
                 ent.components[key].Initialize();
