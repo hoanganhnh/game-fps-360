@@ -26,6 +26,8 @@ import Sky from './entities/Sky/Sky';
 import LevelSetup from './entities/Level/LevelSetup';
 import PlayerPhysics from './entities/Player/PlayerPhysics';
 import PlayerControls from './entities/Player/PlayerControls';
+import PlayerHealth from './entities/Player/PlayerHealth';
+import Weapon from './entities/Weapon/Weapon';
 
 // * Assets
 import skyTex from './assets/sky.jpg';
@@ -39,8 +41,6 @@ import ak47ReloadAudio from './assets/sounds/reload_gun.wav';
 
 import UIManager from './ui/UIManager';
 import { Ammo, AmmoHelper } from './libs/AmmoLib';
-import PlayerHealth from './entities/Player/PlayerHealth';
-import Weapon from './entities/Weapon/Weapon';
 
 class FPSGameApp {
     constructor() {
