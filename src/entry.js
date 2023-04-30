@@ -33,10 +33,14 @@ import level from './assets/level.glb';
 import navmesh from './assets/navmesh.obj';
 import ak47 from './assets/guns/ak47/ak47.glb';
 import muzzleFlash from './assets/muzzle_flash.glb';
+// sound
+import ak47ShotAudio from './assets/sounds/ak47_shot.wav';
+import ak47ReloadAudio from './assets/sounds/reload_gun.wav';
 
 import UIManager from './ui/UIManager';
 import { Ammo, AmmoHelper } from './libs/AmmoLib';
 import PlayerHealth from './entities/Player/PlayerHealth';
+import Weapon from './entities/Weapon/Weapon';
 
 class FPSGameApp {
     constructor() {
@@ -69,6 +73,8 @@ class FPSGameApp {
         this.camera.near = 0.01;
 
         // create an AudioListener and add it to the camera
+        this.listener = new THREE.AudioListener();
+        this.camera.add(this.listener);
 
         // renderer
         this.renderer.setPixelRatio(window.devicePixelRatio);
@@ -89,6 +95,7 @@ class FPSGameApp {
         const textureLoader = new THREE.TextureLoader();
         const gltfLoader = new GLTFLoader();
         const objLoader = new OBJLoader();
+        const audioLoader = new THREE.AudioLoader();
 
         const promises = [];
 
@@ -98,9 +105,20 @@ class FPSGameApp {
         promises.push(this.AddAsset(level, gltfLoader, 'level'));
         promises.push(this.AddAsset(navmesh, objLoader, 'navmesh'));
 
+        // AK47
+        promises.push(this.AddAsset(ak47, gltfLoader, 'ak47'));
+        promises.push(this.AddAsset(muzzleFlash, gltfLoader, 'muzzleFlash'));
+        promises.push(this.AddAsset(ak47ShotAudio, audioLoader, 'ak47Shot'));
+        promises.push(
+            this.AddAsset(ak47ReloadAudio, audioLoader, 'ak47Reload')
+        );
+
         await this.PromiseProgress(promises, this.OnProgress);
 
         this.assets['level'] = this.assets['level'].scene;
+
+        this.assets['ak47'].scene.animations = this.assets['ak47'].animations;
+        this.assets['muzzleFlash'] = this.assets['muzzleFlash'].scene;
 
         this.HideProgress();
         this.ShowMenu();
@@ -129,6 +147,17 @@ class FPSGameApp {
         playerEntity.AddComponent(new PlayerPhysics(this.physicsWorld));
         playerEntity.AddComponent(new PlayerControls(this.camera));
         playerEntity.AddComponent(new PlayerHealth());
+        playerEntity.AddComponent(
+            new Weapon(
+                this.camera,
+                this.assets['ak47'].scene,
+                this.assets['muzzleFlash'],
+                this.physicsWorld,
+                this.assets['ak47Shot'],
+                this.assets['ak47Reload'],
+                this.listener
+            )
+        );
         playerEntity.SetPosition(new THREE.Vector3(2.14, 1.48, -1.36));
         playerEntity.SetRotation(
             new THREE.Quaternion().setFromAxisAngle(

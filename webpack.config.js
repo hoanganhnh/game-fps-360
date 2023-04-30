@@ -1,6 +1,6 @@
 const path = require('path');
-const pkg = require('./package.json');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+
 const buildPath = './build/';
 
 module.exports = {
@@ -43,8 +43,12 @@ module.exports = {
     },
     plugins: [
         new HtmlWebpackPlugin({
-            title: 'Three.js FPS Demo | Venolabs',
+            title: 'Three.js FPS',
             template: './src/index.html',
         }),
     ],
+    devServer: {
+        compress: true,
+        port: 8000,
+    },
 };

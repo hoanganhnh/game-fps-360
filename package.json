@@ -9,7 +9,7 @@
         "webpack"
     ],
     "scripts": {
-        "start": "webpack serve",
+        "dev": "webpack serve",
         "prebuild": "npx rimraf ./build && npx mkdirp ./build",
         "build": "webpack --mode production"
     },

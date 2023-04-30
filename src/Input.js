@@ -57,6 +57,14 @@ class Input {
         this.AddKeyDownListener(this._onKeyDown);
         this.AddKeyUpListener(this._onKeyUp);
     }
+
+    AddMouseDownListener(callback) {
+        this._addEventListener(document.body, 'mousedown', callback);
+    }
+
+    AddMouseUpListener(callback) {
+        this._addEventListener(document.body, 'mouseup', callback);
+    }
 }
 
 const inputInstance = new Input();
