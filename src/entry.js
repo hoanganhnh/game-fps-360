@@ -13,6 +13,8 @@ import * as THREE from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader';
+import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
+import { SkeletonUtils } from 'three/examples/jsm/utils/SkeletonUtils';
 
 // * Entity utilities
 import EntityManager from './EntityManager';
@@ -28,13 +30,23 @@ import PlayerPhysics from './entities/Player/PlayerPhysics';
 import PlayerControls from './entities/Player/PlayerControls';
 import PlayerHealth from './entities/Player/PlayerHealth';
 import Weapon from './entities/Weapon/Weapon';
+import Navmesh from './entities/Navmesh/Navmesh';
+import NpcCharacterController from './entities/NPC/CharacterController';
+import AttackTrigger from './entities/NPC/AttackTrigger';
+import CharacterCollision from './entities/NPC/CharacterCollision';
 
 // * Assets
 import skyTex from './assets/sky.jpg';
 import level from './assets/level.glb';
 import navmesh from './assets/navmesh.obj';
-import ak47 from './assets/guns/ak47/ak47.glb';
+import ak47 from './assets/ak47/ak47.glb';
 import muzzleFlash from './assets/muzzle_flash.glb';
+import mutant from './assets/mutant/mutant.fbx';
+import idleAnim from './assets/mutant/mutant-breathing-idle.fbx';
+import attackAnim from './assets/mutant/mutant-punch.fbx';
+import walkAnim from './assets/mutant/mutant-walking.fbx';
+import runAnim from './assets/mutant/mutant-run.fbx';
+import dieAnim from './assets/mutant/mutant-dying.fbx';
 // sound
 import ak47ShotAudio from './assets/sounds/ak47_shot.wav';
 import ak47ReloadAudio from './assets/sounds/reload_gun.wav';
@@ -95,6 +107,7 @@ class FPSGameApp {
         const textureLoader = new THREE.TextureLoader();
         const gltfLoader = new GLTFLoader();
         const objLoader = new OBJLoader();
+        const fbxLoader = new FBXLoader();
         const audioLoader = new THREE.AudioLoader();
 
         const promises = [];
@@ -113,12 +126,27 @@ class FPSGameApp {
             this.AddAsset(ak47ReloadAudio, audioLoader, 'ak47Reload')
         );
 
+        // Mutant
+        promises.push(this.AddAsset(mutant, fbxLoader, 'mutant'));
+        promises.push(this.AddAsset(idleAnim, fbxLoader, 'idleAnim'));
+        promises.push(this.AddAsset(walkAnim, fbxLoader, 'walkAnim'));
+        promises.push(this.AddAsset(runAnim, fbxLoader, 'runAnim'));
+        promises.push(this.AddAsset(attackAnim, fbxLoader, 'attackAnim'));
+        promises.push(this.AddAsset(dieAnim, fbxLoader, 'dieAnim'));
+
         await this.PromiseProgress(promises, this.OnProgress);
 
         this.assets['level'] = this.assets['level'].scene;
-
         this.assets['ak47'].scene.animations = this.assets['ak47'].animations;
         this.assets['muzzleFlash'] = this.assets['muzzleFlash'].scene;
+
+        // Extract mutant animations
+        this.mutantAnimations = {};
+        this.SetAnimation('idle', this.assets['idleAnim']);
+        this.SetAnimation('walk', this.assets['walkAnim']);
+        this.SetAnimation('run', this.assets['runAnim']);
+        this.SetAnimation('attack', this.assets['attackAnim']);
+        this.SetAnimation('die', this.assets['dieAnim']);
 
         this.HideProgress();
         this.ShowMenu();
@@ -138,6 +166,10 @@ class FPSGameApp {
         levelEntity.SetName('Level');
         levelEntity.AddComponent(
             new LevelSetup(this.assets['level'], this.scene, this.physicsWorld)
+        );
+        // add Navmesh entity into Level
+        levelEntity.AddComponent(
+            new Navmesh(this.scene, this.assets['navmesh'])
         );
         this.entityManager.Add(levelEntity);
 
@@ -166,6 +198,22 @@ class FPSGameApp {
             )
         );
         this.entityManager.Add(playerEntity);
+
+        // Mutant entity
+        const npcEntity = new Entity();
+        npcEntity.SetPosition(new THREE.Vector3(10, 0, 20));
+        npcEntity.SetName(`Mutant`);
+        npcEntity.AddComponent(
+            new NpcCharacterController(
+                SkeletonUtils.clone(this.assets['mutant']),
+                this.mutantAnimations,
+                this.scene,
+                this.physicsWorld
+            )
+        );
+        npcEntity.AddComponent(new AttackTrigger(this.physicsWorld));
+        npcEntity.AddComponent(new CharacterCollision(this.physicsWorld));
+        this.entityManager.Add(npcEntity);
 
         // display amount bullet, blood of player
         const uiManagerEntity = new Entity();
@@ -204,6 +252,11 @@ class FPSGameApp {
             .getBroadphase()
             .getOverlappingPairCache()
             .setInternalGhostPairCallback(new Ammo.btGhostPairCallback());
+    }
+
+    SetAnimation(name, obj) {
+        const clip = obj.animations[0];
+        this.mutantAnimations[name] = clip;
     }
 
     PhysicsUpdate = (world, timeStep) => {

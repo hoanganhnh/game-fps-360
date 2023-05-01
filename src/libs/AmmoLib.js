@@ -17,6 +17,8 @@ let rayOrigin = null;
 let rayDest = null;
 let closestRayResultCallback = null;
 
+const CollisionFlags = { CF_NO_CONTACT_RESPONSE: 4 };
+
 function createConvexGeom(object) {
     // Compute the 3D convex hull.
     let hull = new ConvexHull().setFromObject(object);
@@ -125,6 +127,45 @@ class AmmoHelper {
         } else {
             return false;
         }
+    }
+
+    static CreateTrigger(shape, position, rotation) {
+        const transform = new Ammo.btTransform();
+        transform.setIdentity();
+        position &&
+            transform.setOrigin(
+                new Ammo.btVector3(position.x, position.y, position.z)
+            );
+        rotation &&
+            transform.setRotation(
+                new Ammo.btQuaternion(
+                    rotation.x,
+                    rotation.y,
+                    rotation.z,
+                    rotation.w
+                )
+            );
+
+        const ghostObj = new Ammo.btPairCachingGhostObject();
+        ghostObj.setCollisionShape(shape);
+        ghostObj.setCollisionFlags(CollisionFlags.CF_NO_CONTACT_RESPONSE);
+        ghostObj.setWorldTransform(transform);
+
+        return ghostObj;
+    }
+
+    static IsTriggerOverlapping(ghostObj, rigidBody) {
+        for (let i = 0; i < ghostObj.getNumOverlappingObjects(); i++) {
+            const body = Ammo.castObject(
+                ghostObj.getOverlappingObject(i),
+                Ammo.btRigidBody
+            );
+            if (body == rigidBody) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
 

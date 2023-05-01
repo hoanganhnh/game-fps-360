@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 
+import WeaponFSM from './WeaponFSM';
 import Component from '../Component';
 import Input from '../../Input';
-import WeaponFSM from '../../WeaponFSM';
 import { Ammo, AmmoHelper, CollisionFilterGroups } from '../../libs/AmmoLib';
 
 export default class Weapon extends Component {
