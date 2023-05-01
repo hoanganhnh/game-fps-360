@@ -6,6 +6,7 @@ import Component from '../Component';
 export default class CharacterCollision extends Component {
     constructor(physicsWorld) {
         super();
+        this.name = 'CharacterCollision';
         this.world = physicsWorld;
         this.bonePos = new THREE.Vector3();
         this.boneRot = new THREE.Quaternion();

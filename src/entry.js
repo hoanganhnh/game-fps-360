@@ -50,6 +50,7 @@ import dieAnim from './assets/mutant/mutant-dying.fbx';
 // sound
 import ak47ShotAudio from './assets/sounds/ak47_shot.wav';
 import ak47ReloadAudio from './assets/sounds/reload_gun.wav';
+import backgroundAudio from './assets/sounds/background-sound.wav';
 
 import UIManager from './ui/UIManager';
 import { Ammo, AmmoHelper } from './libs/AmmoLib';
@@ -111,6 +112,11 @@ class FPSGameApp {
         const audioLoader = new THREE.AudioLoader();
 
         const promises = [];
+
+        // Sound background
+        promises.push(
+            this.AddAsset(backgroundAudio, audioLoader, 'backgroundMusic')
+        );
 
         // Sky
         promises.push(this.AddAsset(skyTex, textureLoader, 'skyTex'));
@@ -259,6 +265,39 @@ class FPSGameApp {
         this.mutantAnimations[name] = clip;
     }
 
+    SetSoundBackground() {
+        this.backgroundSound = new THREE.Audio(this.listener);
+        this.backgroundSound.setBuffer(this.assets['backgroundMusic']);
+        this.backgroundSound.setLoop(true);
+        this.backgroundSound.play();
+    }
+
+    SetToggleSoundBackground = () => {
+        const volumeOn = document.getElementById('volume_on');
+        const mute = document.getElementById('mute');
+
+        const onPlaySound = () => {
+            this.backgroundSound.play();
+        };
+
+        const onOffSound = () => {
+            this.backgroundSound.stop();
+        };
+
+        console.log(this.backgroundSound?.isPlaying);
+        if (this.backgroundSound.isPlaying) {
+            volumeOn.style.visibility = 'hidden';
+            mute.style.visibility = 'visible';
+            this.backgroundSound.stop();
+        } else {
+            volumeOn.style.visibility = 'visible';
+            mute.style.visibility = 'hidden';
+            // volumeOn.setAttribute('visibility', 'visible');
+            // mute.setAttribute('visibility', 'hidden');
+            this.backgroundSound.play();
+        }
+    };
+
     PhysicsUpdate = (world, timeStep) => {
         this.entityManager.PhysicsUpdate(world, timeStep);
     };
@@ -310,6 +349,7 @@ class FPSGameApp {
         this.scene.clear();
         this.SetupPhysics();
         this.EntitySetup();
+        this.SetSoundBackground();
         this.ShowMenu(false);
     };
 
@@ -335,6 +375,10 @@ class FPSGameApp {
         this.animFrameId = window.requestAnimationFrame(
             this.OnAnimationFrameHandler
         );
+
+        document
+            .getElementById('sound_container')
+            .addEventListener('click', this.SetToggleSoundBackground);
     };
 
     Step(elapsedTime) {
