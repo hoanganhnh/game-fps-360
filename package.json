@@ -11,7 +11,7 @@
     "scripts": {
         "dev": "webpack serve",
         "prebuild": "npx rimraf ./build && npx mkdirp ./build",
-        "build": "webpack --mode production"
+        "build": "env NODE_OPTIONS=--openssl-legacy-provider webpack --mode production"
     },
     "dependencies": {
         "@types/ammo.js": "github:osman-turan/ammo.js-typings",
